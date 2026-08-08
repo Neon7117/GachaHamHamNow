@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐹 HamHam Gacha 🐹</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #ff769f;
@@ -236,15 +239,209 @@
         
         .master-log-table th { background: #ffebf0; color: #b83280; }
         .timestamp-badge { font-family: monospace; font-weight: bold; color: #4a5568; background: #edf2f7; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+
+        /* ============================================================
+           HAMHAM SAKURA THEME  —  ธีมชมพู + แฮมสเตอร์ + ฟรุ้งฟริ้ง
+           ============================================================ */
+        :root {
+            --primary: #ff6fa5;
+            --primary-hover: #ff4f90;
+            --bg: #fff6f9;
+            --text: #5b3a48;
+            --ham-blush: #ffd9e6;
+            --ham-honey: #ffc46b;
+            --ham-mint: #8fe3d0;
+            --ham-line: #ffe3ec;
+            --ham-shadow: 0 10px 30px rgba(255,111,165,0.18);
+        }
+
+        * { font-family: 'Quicksand', 'Mali', 'Segoe UI', Tahoma, sans-serif; }
+        h1, h2, h3, .roll-btn, .tab-btn, .history-title, .modal-item-name, .rarity-badge, .item-name {
+            font-family: 'Mali', 'Quicksand', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background:
+                radial-gradient(1100px 560px at 8% -8%, #ffe7f1 0%, rgba(255,231,241,0) 60%),
+                radial-gradient(900px 520px at 108% 6%, #fff1e2 0%, rgba(255,241,226,0) 55%),
+                var(--bg);
+            min-height: 100vh;
+        }
+
+        /* --- ชั้นฟรุ้งฟริ้งลอยพื้นหลัง --- */
+        .ham-sky { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+        .container { position: relative; z-index: 1; }
+        .ham-sparkle { position: absolute; bottom: -40px; opacity: 0; will-change: transform, opacity; animation-name: hamFloatUp; animation-timing-function: linear; animation-iteration-count: infinite; }
+        @keyframes hamFloatUp {
+            0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.7); opacity: 0; }
+            12%  { opacity: 0.85; }
+            50%  { transform: translate3d(26px, -50vh, 0) rotate(180deg) scale(1); }
+            88%  { opacity: 0.5; }
+            100% { transform: translate3d(-18px, -108vh, 0) rotate(360deg) scale(0.8); opacity: 0; }
+        }
+
+        /* --- หัวเว็บ --- */
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #fff3f8 55%, #fff8ee 100%);
+            border: 2px solid var(--ham-line);
+            border-radius: 26px;
+            box-shadow: var(--ham-shadow);
+            position: relative;
+            overflow: hidden;
+            padding: 26px 20px 22px;
+        }
+        header::before, header::after {
+            content: "🐾"; position: absolute; font-size: 1.6rem; opacity: 0.18; pointer-events: none;
+        }
+        header::before { top: 12px; left: 18px; transform: rotate(-18deg); }
+        header::after  { bottom: 10px; right: 20px; transform: rotate(14deg); }
+        header h1 { color: var(--primary); font-size: 2.35rem; letter-spacing: 0.5px; text-shadow: 0 2px 0 #fff, 0 6px 14px rgba(255,111,165,0.22); }
+        header p { color: #b08096; font-size: 0.92rem; }
+        .auto-save-badge { background: linear-gradient(135deg, #ffe0a3, #ffc46b); color: #7a4a12; border-radius: 20px; box-shadow: 0 3px 8px rgba(255,196,107,0.4); }
+
+        .ham-fx-toggle {
+            display: inline-block; margin-top: 8px; margin-left: 6px; border: 2px solid var(--ham-line);
+            background: #fff; color: var(--primary); font-size: 0.75rem; font-weight: 700;
+            padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s; -webkit-appearance: none;
+        }
+        .ham-fx-toggle:hover { background: #fff0f5; transform: translateY(-1px); }
+
+        /* --- แท็บ --- */
+        .tab-btn {
+            background: #ffffff; color: #b3839a; border: 2px solid var(--ham-line);
+            box-shadow: 0 3px 0 var(--ham-line); transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+        }
+        .tab-btn:hover { transform: translateY(-2px); background: #fff7fa; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ff92bb, #ff5f9c); color: #fff; border-color: transparent;
+            box-shadow: 0 8px 18px rgba(255,95,156,0.35);
+        }
+        .panel { border-radius: 24px; border: 2px solid var(--ham-line); box-shadow: var(--ham-shadow); }
+
+        /* --- วงล้อ --- */
+        .gacha-animation-area::after {
+            content: ""; position: absolute; inset: -18px; border-radius: 50%; z-index: -1;
+            background: radial-gradient(circle, rgba(255,143,184,0.35) 0%, rgba(255,143,184,0) 68%);
+            animation: hamHalo 3.2s ease-in-out infinite;
+        }
+        @keyframes hamHalo { 0%,100% { transform: scale(0.97); opacity: 0.75; } 50% { transform: scale(1.05); opacity: 1; } }
+        .wheel-wrapper {
+            border: 14px solid transparent;
+            background:
+                linear-gradient(#fff, #fff) padding-box,
+                conic-gradient(from 0deg, #ffb3cd, #ffd6a5, #8fe3d0, #cbb6ff, #ffb3cd) border-box;
+            box-shadow: 0 0 0 6px #fff, 0 18px 40px rgba(255,111,165,0.3);
+        }
+        .wheel-pointer { background: linear-gradient(180deg, #ff8fb8, #ff4f90); width: 30px; height: 34px; filter: drop-shadow(0 4px 6px rgba(255,79,144,0.4)); }
+
+        /* --- น้องแฮมมาสคอต --- */
+        .ham-mascot {
+            position: absolute; right: -18px; bottom: -10px; width: 122px; z-index: 12;
+            pointer-events: none; transform-origin: 50% 100%;
+            animation: hamBreath 2.8s ease-in-out infinite;
+            filter: drop-shadow(0 8px 14px rgba(255,111,165,0.35));
+        }
+        @keyframes hamBreath {
+            0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+            50%      { transform: translateY(-5px) rotate(2deg) scale(1.03); }
+        }
+        .ham-mascot.is-spinning { animation: hamExcited 0.34s ease-in-out infinite; }
+        @keyframes hamExcited {
+            0%, 100% { transform: translateY(0) rotate(-8deg) scale(1.04); }
+            50%      { transform: translateY(-10px) rotate(8deg) scale(1.08); }
+        }
+        .ham-mascot .ham-capsule { transform-origin: 50% 50%; animation: hamCapsule 2.4s ease-in-out infinite; }
+        @keyframes hamCapsule { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+        .ham-speech {
+            position: absolute; right: 96px; bottom: 84px; z-index: 13;
+            background: #fff; border: 2px solid var(--ham-line); color: var(--primary);
+            font-size: 0.72rem; font-weight: 700; padding: 5px 11px; border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(255,111,165,0.2); opacity: 0; transform: translateY(6px);
+            transition: 0.25s; white-space: nowrap; pointer-events: none;
+        }
+        .ham-speech.show { opacity: 1; transform: translateY(0); }
+
+        /* --- ปุ่มสุ่ม --- */
+        .roll-btn {
+            background: linear-gradient(135deg, #ff92bb 0%, #ff5f9c 55%, #ff7fae 100%);
+            box-shadow: 0 12px 26px rgba(255,95,156,0.42); letter-spacing: 1px;
+            position: relative; overflow: hidden; border: 3px solid #fff;
+        }
+        .roll-btn::after {
+            content: ""; position: absolute; top: 0; left: -70%; width: 45%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transform: skewX(-22deg); animation: hamShine 3.6s ease-in-out infinite;
+        }
+        @keyframes hamShine { 0%, 62% { left: -70%; } 100% { left: 130%; } }
+        .roll-btn:hover { transform: translateY(-3px) scale(1.02); }
+        .roll-btn:active { transform: translateY(2px) scale(0.98); }
+        .roll-btn:disabled::after { display: none; }
+
+        /* --- การ์ดสินค้า --- */
+        .item-card {
+            background: linear-gradient(180deg, #ffffff, #fffafc);
+            border: 2px solid var(--ham-line); border-radius: 18px;
+            transition: transform 0.18s, box-shadow 0.18s;
+        }
+        .item-card:hover { transform: translateY(-5px) rotate(-0.6deg); box-shadow: 0 14px 26px rgba(255,111,165,0.22); }
+        .rarity-badge { box-shadow: 0 3px 7px rgba(0,0,0,0.12); }
+        .stock-section { border-top: 3px dashed var(--ham-line); }
+        .history-box { border-radius: 22px; border-color: var(--ham-line); }
+        .price-badge-banner-v35 { background: linear-gradient(135deg, #fff2f7, #fff8ee); border: 2px dashed var(--primary); border-radius: 14px; }
+
+        /* --- โมดัลผลรางวัล --- */
+        .modal-content { border-radius: 30px; border: 3px solid var(--ham-line); box-shadow: 0 24px 60px rgba(255,111,165,0.35); }
+        .close-modal-btn { background: linear-gradient(135deg, #ff92bb, #ff5f9c); border-radius: 40px; }
+
+        /* --- เอฟเฟกต์ระเบิด --- */
+        .ham-burst-layer { position: fixed; inset: 0; pointer-events: none; z-index: 3000; overflow: hidden; }
+        .ham-particle {
+            position: absolute; font-size: 18px; will-change: transform, opacity;
+            animation: hamPop 1s cubic-bezier(0.15, 0.75, 0.35, 1) forwards;
+        }
+        @keyframes hamPop {
+            0%   { transform: translate3d(0,0,0) scale(0.4) rotate(0deg); opacity: 1; }
+            70%  { opacity: 1; }
+            100% { transform: translate3d(var(--dx), var(--dy), 0) scale(1.1) rotate(var(--rot)); opacity: 0; }
+        }
+
+        /* --- ปิดเอฟเฟกต์ --- */
+        body.fx-off .ham-sky,
+        body.fx-off .ham-burst-layer { display: none; }
+        body.fx-off .ham-mascot,
+        body.fx-off .ham-mascot .ham-capsule,
+        body.fx-off .roll-btn::after,
+        body.fx-off .gacha-animation-area::after { animation: none; }
+
+        /* --- มือถือ --- */
+        @media (max-width: 960px) {
+            body { padding: 12px; }
+            header h1 { font-size: 1.65rem; }
+            .roll-container-flex { flex-direction: column; align-items: center; gap: 24px; }
+            .right-sidebar-v33 { width: 100%; }
+            .history-box { width: 100%; height: 420px; }
+            .ham-mascot { width: 86px; right: -8px; }
+            .ham-speech { display: none; }
+        }
+
+        /* --- เคารพคนที่ไม่ถูกกับแอนิเมชัน --- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+            .ham-sky, .ham-burst-layer { display: none; }
+        }
     </style>
 </head>
 <body>
+
+<div class="ham-sky" id="ham-sky" aria-hidden="true"></div>
+<div class="ham-burst-layer" id="ham-burst-layer" aria-hidden="true"></div>
 
 <div class="container">
     <header>
         <h1>🌸 Cosplay Lucky Draw V35 🌸</h1>
         <p>Cute Hamster Gacha & Perfect Sidebar Edition - Layout Precision Active! 🎯</p>
         <div class="auto-save-badge">🔒 Local Auto-Save Active</div>
+        <button class="ham-fx-toggle" id="ham-fx-toggle" onclick="hamToggleFx()">✨ Sparkles: on</button>
     </header>
 
     <div class="tabs">
@@ -285,6 +482,31 @@
                             <div class="wheel-wrapper" id="wheel-wrapper">
                                 <canvas id="wheel-canvas" width="700" height="700"></canvas>
                             </div>
+                            <div class="ham-speech" id="ham-speech">ขอให้โชคดีนะคะ! 🍀</div>
+                            <svg class="ham-mascot" id="ham-mascot" viewBox="0 0 120 120" aria-hidden="true">
+                                <ellipse cx="60" cy="112" rx="34" ry="6" fill="rgba(255,111,165,0.18)"/>
+                                <ellipse cx="34" cy="46" rx="12" ry="13" fill="#f6d3b8"/>
+                                <ellipse cx="34" cy="46" rx="7" ry="8" fill="#ffc0d4"/>
+                                <ellipse cx="86" cy="46" rx="12" ry="13" fill="#f6d3b8"/>
+                                <ellipse cx="86" cy="46" rx="7" ry="8" fill="#ffc0d4"/>
+                                <ellipse cx="60" cy="70" rx="42" ry="40" fill="#f9e0c8"/>
+                                <ellipse cx="60" cy="80" rx="28" ry="27" fill="#fffaf3"/>
+                                <ellipse cx="30" cy="74" rx="9" ry="7" fill="#ffb3cd" opacity="0.75"/>
+                                <ellipse cx="90" cy="74" rx="9" ry="7" fill="#ffb3cd" opacity="0.75"/>
+                                <ellipse cx="46" cy="62" rx="5.5" ry="6.5" fill="#4a2f3a"/>
+                                <ellipse cx="74" cy="62" rx="5.5" ry="6.5" fill="#4a2f3a"/>
+                                <circle cx="48" cy="60" r="2" fill="#fff"/>
+                                <circle cx="76" cy="60" r="2" fill="#fff"/>
+                                <ellipse cx="60" cy="72" rx="4" ry="3" fill="#ff7fae"/>
+                                <path d="M53 78 Q60 84 67 78" stroke="#c98ba0" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+                                <g class="ham-capsule">
+                                    <circle cx="60" cy="99" r="12" fill="#ffd9e6" stroke="#ff8fb8" stroke-width="2"/>
+                                    <path d="M48 99 h24" stroke="#ff8fb8" stroke-width="2"/>
+                                    <circle cx="56" cy="95" r="2.6" fill="#fff" opacity="0.9"/>
+                                </g>
+                                <ellipse cx="44" cy="100" rx="7" ry="5" fill="#f6d3b8"/>
+                                <ellipse cx="76" cy="100" rx="7" ry="5" fill="#f6d3b8"/>
+                            </svg>
                         </div>
                         <button class="skip-btn" id="skip-btn" onclick="skipAnimation()">⏩ SKIP Animation</button>
                         
@@ -1078,6 +1300,122 @@
         }
     }
 
+    /* ===================== CUTE FX (SPARKLES + MASCOT) ===================== */
+    const HAM_FX_KEY = 'v30_fx_enabled';
+    const HAM_SPARKLE_GLYPHS = ['\u2728', '\ud83c\udf38', '\ud83d\udc97', '\u2b50', '\ud83e\udee7', '\ud83d\udc3e'];
+    const HAM_BURST_GLYPHS = ['\u2728', '\ud83c\udf38', '\ud83d\udc97', '\ud83c\udf89', '\u2b50', '\ud83c\udf80'];
+    let hamFxOn = localStorage.getItem(HAM_FX_KEY) !== '0';
+    const hamReduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function hamApplyFx() {
+        document.body.classList.toggle('fx-off', !hamFxOn);
+        const btn = document.getElementById('ham-fx-toggle');
+        if (btn) btn.innerText = hamFxOn ? '\u2728 Sparkles: on' : '\ud83d\udca4 Sparkles: off';
+    }
+
+    function hamToggleFx() {
+        hamFxOn = !hamFxOn;
+        localStorage.setItem(HAM_FX_KEY, hamFxOn ? '1' : '0');
+        hamApplyFx();
+        if (hamFxOn) { hamSpawnSparkles(); hamToast('\u0e40\u0e1b\u0e34\u0e14\u0e40\u0e2d\u0e1f\u0e40\u0e1f\u0e01\u0e15\u0e4c\u0e41\u0e25\u0e49\u0e27 \u2728'); }
+        else { hamToast('\u0e1b\u0e34\u0e14\u0e40\u0e2d\u0e1f\u0e40\u0e1f\u0e01\u0e15\u0e4c\u0e41\u0e25\u0e49\u0e27 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e08\u0e30\u0e25\u0e37\u0e48\u0e19\u0e02\u0e36\u0e49\u0e19'); }
+    }
+
+    function hamSpawnSparkles() {
+        const sky = document.getElementById('ham-sky');
+        if (!sky) return;
+        sky.innerHTML = '';
+        if (!hamFxOn || hamReduceMotion) return;
+        const count = window.innerWidth < 700 ? 10 : 18;
+        for (let i = 0; i < count; i++) {
+            const s = document.createElement('span');
+            s.className = 'ham-sparkle';
+            s.innerText = HAM_SPARKLE_GLYPHS[Math.floor(Math.random() * HAM_SPARKLE_GLYPHS.length)];
+            s.style.left = (Math.random() * 100) + '%';
+            s.style.fontSize = (10 + Math.random() * 12) + 'px';
+            s.style.animationDuration = (11 + Math.random() * 10) + 's';
+            s.style.animationDelay = (-Math.random() * 20) + 's';
+            sky.appendChild(s);
+        }
+    }
+
+    function hamBurst(x, y, amount) {
+        if (!hamFxOn || hamReduceMotion) return;
+        const layer = document.getElementById('ham-burst-layer');
+        if (!layer) return;
+        const n = amount || 18;
+        for (let i = 0; i < n; i++) {
+            const p = document.createElement('span');
+            p.className = 'ham-particle';
+            p.innerText = HAM_BURST_GLYPHS[Math.floor(Math.random() * HAM_BURST_GLYPHS.length)];
+            const angle = (Math.PI * 2 * i) / n + (Math.random() * 0.6);
+            const dist = 70 + Math.random() * 130;
+            p.style.left = x + 'px';
+            p.style.top = y + 'px';
+            p.style.fontSize = (14 + Math.random() * 14) + 'px';
+            p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+            p.style.setProperty('--dy', (Math.sin(angle) * dist + 60) + 'px');
+            p.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+            layer.appendChild(p);
+            setTimeout(function () { if (p.parentNode) p.parentNode.removeChild(p); }, 1100);
+        }
+    }
+
+    function hamBurstFrom(el, amount) {
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        hamBurst(r.left + r.width / 2, r.top + r.height / 2, amount);
+    }
+
+    let hamSpeechTimer = null;
+    function hamSay(text, ms) {
+        const bubble = document.getElementById('ham-speech');
+        if (!bubble) return;
+        bubble.innerText = text;
+        bubble.classList.add('show');
+        clearTimeout(hamSpeechTimer);
+        hamSpeechTimer = setTimeout(function () { bubble.classList.remove('show'); }, ms || 2600);
+    }
+
+    function hamMascotSpinning(on) {
+        const m = document.getElementById('ham-mascot');
+        if (m) m.classList.toggle('is-spinning', !!on);
+    }
+
+    /* --- \u0e15\u0e48\u0e2d\u0e40\u0e2d\u0e1f\u0e40\u0e1f\u0e01\u0e15\u0e4c\u0e40\u0e02\u0e49\u0e32\u0e01\u0e31\u0e1a\u0e23\u0e30\u0e1a\u0e1a\u0e40\u0e14\u0e34\u0e21 --- */
+    const hamOrigStartDraw = startDrawGacha;
+    startDrawGacha = function () {
+        const before = isSpinning;
+        hamOrigStartDraw.apply(this, arguments);
+        if (!before && isSpinning) {
+            hamMascotSpinning(true);
+            hamSay('\u0e2b\u0e21\u0e38\u0e19\u0e41\u0e25\u0e49\u0e27\u0e19\u0e30\u0e04\u0e30~ \ud83c\udf80');
+            hamBurstFrom(document.getElementById('roll-button'), 12);
+        }
+    };
+
+    const hamOrigFinish = finishMultiGachaRoll;
+    finishMultiGachaRoll = function () {
+        hamOrigFinish.apply(this, arguments);
+        hamMascotSpinning(false);
+    };
+
+    const hamOrigShowModal = showMultiResultModal;
+    showMultiResultModal = function () {
+        hamOrigShowModal.apply(this, arguments);
+        const rare = currentMultiResults.some(function (r) { return r.item.rarity === 'A' || r.item.rarity === 'B' || r.isLastOne; });
+        setTimeout(function () {
+            hamBurst(window.innerWidth / 2, window.innerHeight / 2.4, rare ? 34 : 16);
+        }, 120);
+        hamSay(rare ? '\u0e27\u0e49\u0e32\u0e27! \u0e02\u0e2d\u0e07\u0e43\u0e2b\u0e0d\u0e48\u0e21\u0e32\u0e01\u0e04\u0e48\u0e30 \ud83c\udf89' : '\u0e40\u0e01\u0e47\u0e1a\u0e44\u0e27\u0e49\u0e14\u0e35\u0e46 \u0e19\u0e30\u0e04\u0e30 \ud83d\udc9d', 3200);
+    };
+
+    window.addEventListener('resize', function () {
+        clearTimeout(window.hamResizeTimer);
+        window.hamResizeTimer = setTimeout(hamSpawnSparkles, 400);
+    });
+    /* =================== END CUTE FX =================== */
+
     /* ===================== EDITABLE PRICE BANNER ===================== */
     const HAM_DEFAULT_PRICE_TEXT = '\ud83e\ude99 25 RM / 1 time  |  \ud83d\udc51 100 RM / 5 time';
 
@@ -1412,6 +1750,9 @@
     loadFromLocalStorage(); 
     render(); 
     animateIdleWheel();
+    hamApplyFx();
+    hamSpawnSparkles();
+    setTimeout(function () { hamSay('\u0e2a\u0e27\u0e31\u0e2a\u0e14\u0e35\u0e04\u0e48\u0e32! \u0e21\u0e32\u0e2a\u0e38\u0e48\u0e21\u0e01\u0e31\u0e19\u0e40\u0e16\u0e2d\u0e30~ \ud83d\udc39', 3600); }, 900);
 
     if (hamRepairedCount > 0) {
         setTimeout(function () {
