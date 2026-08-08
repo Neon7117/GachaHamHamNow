@@ -191,6 +191,14 @@
         
         .btn-set-default { background: #9f7aea; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-bottom: 20px; transition: 0.2s; -webkit-appearance: none; }
         .btn-set-default:hover { background: #805ad5; }
+.backup-bar { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 16px; margin: 0 0 20px 0; border: 2px dashed #cbd5e0; border-radius: 12px; background: #fafafa; }
+.backup-bar-title { font-weight: bold; color: #4a5568; margin-right: 6px; }
+.btn-backup { padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: #fff; transition: 0.2s; -webkit-appearance: none; }
+.btn-backup:hover { filter: brightness(0.9); }
+.btn-bk-export { background: #38a169; }
+.btn-bk-import { background: #3182ce; }
+.btn-bk-code { background: #d69e2e; }
+.backup-hint { flex-basis: 100%; font-size: 0.8rem; color: #718096; }
         
         .inline-edit-input { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.9rem; font-weight: bold; color: var(--text); }
         .inline-edit-select { padding: 6px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.9rem; font-weight: bold; }
@@ -305,6 +313,15 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 5px;">
             <h3>🛠️ Admin Management Panel</h3>
             <button class="btn-set-default" onclick="setPoolAsCustomDefault()">💾 Save Current Pool as Default Template</button>
+        </div>
+
+        <div class="backup-bar">
+            <span class="backup-bar-title">🧳 Backup / Transfer Data</span>
+            <button class="btn-backup btn-bk-export" onclick="hamExportAllData()">📤 Export .json</button>
+            <button class="btn-backup btn-bk-import" onclick="hamTriggerImport()">📥 Import .json</button>
+            <button class="btn-backup btn-bk-code" onclick="hamExportDefaultCode()">🧬 Export Default Code</button>
+            <input type="file" id="ham-import-file" accept=".json,application/json" style="display:none;" onchange="hamImportAllData(event)">
+            <div class="backup-hint">Export = เซฟข้อมูลทั้งหมดเป็นไฟล์ · Import = กู้ข้อมูลกลับมา (ทับของเดิม) · Default Code = โค้ดสำหรับฝังลงไฟล์ index.html</div>
         </div>
         
         <div class="admin-form">
@@ -1023,6 +1040,125 @@
             alert("ล้างคลังประวัติล็อกรวมถาวรเกลี้ยงตับเรียบร้อยแล้วค่ะ! 🧹✨");
         }
     }
+
+    /* ===================== BACKUP / TRANSFER SYSTEM ===================== */
+    const HAM_BACKUP_KEYS = [
+        'v30_gacha_items',
+        'v30_gacha_history',
+        'v30_gacha_lastone',
+        'v30_gacha_master_logs',
+        'v30_custom_default_template'
+    ];
+
+    function hamDownloadFile(filename, text, mime) {
+        try {
+            const blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+            return true;
+        } catch (e) {
+            console.error('download failed', e);
+            alert('\u0e14\u0e32\u0e27\u0e19\u0e4c\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08\u0e04\u0e48\u0e30 \u0e25\u0e2d\u0e07\u0e40\u0e0a\u0e47\u0e01\u0e01\u0e32\u0e23\u0e1a\u0e25\u0e47\u0e2d\u0e01\u0e14\u0e32\u0e27\u0e19\u0e4c\u0e42\u0e2b\u0e25\u0e14\u0e02\u0e2d\u0e07\u0e40\u0e1a\u0e23\u0e32\u0e27\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c\u0e14\u0e39\u0e19\u0e30\u0e04\u0e30');
+            return false;
+        }
+    }
+
+    function hamTimeStamp() {
+        const d = new Date();
+        const p = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes());
+    }
+
+    function hamExportAllData() {
+        playClickSound();
+        saveToLocalStorage();
+        const payload = { app: 'HamHamGacha', format: 1, exportedAt: new Date().toISOString(), data: {} };
+        HAM_BACKUP_KEYS.forEach(function (k) {
+            const v = localStorage.getItem(k);
+            if (v !== null) payload.data[k] = v;
+        });
+        const text = JSON.stringify(payload);
+        const sizeMB = (text.length / 1048576).toFixed(2);
+        if (hamDownloadFile('hamham-gacha-backup-' + hamTimeStamp() + '.json', text, 'application/json')) {
+            alert('\u0e2a\u0e48\u0e07\u0e2d\u0e2d\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27\u0e04\u0e48\u0e30! \U0001f4be\u2728\n\u0e02\u0e19\u0e32\u0e14\u0e44\u0e1f\u0e25\u0e4c \u2248 ' + sizeMB + ' MB\n\u0e40\u0e01\u0e47\u0e1a\u0e44\u0e1f\u0e25\u0e4c\u0e19\u0e35\u0e49\u0e44\u0e27\u0e49\u0e43\u0e2b\u0e49\u0e14\u0e35 \u0e43\u0e0a\u0e49\u0e01\u0e39\u0e49\u0e04\u0e37\u0e19\u0e44\u0e14\u0e49\u0e17\u0e38\u0e01\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e19\u0e30\u0e04\u0e30');
+        }
+    }
+
+    function hamTriggerImport() {
+        playClickSound();
+        const el = document.getElementById('ham-import-file');
+        el.value = '';
+        el.click();
+    }
+
+    function hamImportAllData(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            let payload;
+            try {
+                payload = JSON.parse(e.target.result);
+            } catch (err) {
+                alert('\u0e44\u0e1f\u0e25\u0e4c\u0e19\u0e35\u0e49\u0e2d\u0e48\u0e32\u0e19\u0e44\u0e21\u0e48\u0e2d\u0e2d\u0e01\u0e04\u0e48\u0e30 (JSON \u0e40\u0e2a\u0e35\u0e22) \u274c');
+                return;
+            }
+            if (!payload || payload.app !== 'HamHamGacha' || !payload.data) {
+                alert('\u0e44\u0e1f\u0e25\u0e4c\u0e19\u0e35\u0e49\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e44\u0e1f\u0e25\u0e4c\u0e2a\u0e33\u0e23\u0e2d\u0e07\u0e02\u0e2d\u0e07 HamHam Gacha \u0e04\u0e48\u0e30 \u274c');
+                return;
+            }
+            let n = 0;
+            try {
+                const items = payload.data['v30_gacha_items'];
+                n = items ? JSON.parse(items).length : 0;
+            } catch (err) { n = 0; }
+            const when = payload.exportedAt ? new Date(payload.exportedAt).toLocaleString() : '\u0e44\u0e21\u0e48\u0e17\u0e23\u0e32\u0e1a';
+            const ok = confirm('\u0e01\u0e39\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e08\u0e32\u0e01\u0e44\u0e1f\u0e25\u0e4c\u0e19\u0e35\u0e49?\n\n\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e2a\u0e48\u0e07\u0e2d\u0e2d\u0e01: ' + when + '\n\u0e08\u0e33\u0e19\u0e27\u0e19\u0e44\u0e2d\u0e40\u0e17\u0e21: ' + n + ' \u0e0a\u0e34\u0e49\u0e19\n\n\u26a0\ufe0f \u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14\u0e43\u0e19\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e19\u0e35\u0e49\u0e08\u0e30\u0e16\u0e39\u0e01\u0e40\u0e02\u0e35\u0e22\u0e19\u0e17\u0e31\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14');
+            if (!ok) return;
+            try {
+                HAM_BACKUP_KEYS.forEach(function (k) {
+                    if (Object.prototype.hasOwnProperty.call(payload.data, k)) {
+                        localStorage.setItem(k, payload.data[k]);
+                    }
+                });
+                loadFromLocalStorage();
+                render();
+                alert('\u0e01\u0e39\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27\u0e04\u0e48\u0e30! \U0001f43b\u2728');
+            } catch (err) {
+                console.error(err);
+                alert('\u0e01\u0e39\u0e49\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u0e2d\u0e32\u0e08\u0e40\u0e1e\u0e23\u0e32\u0e30\u0e1e\u0e37\u0e49\u0e19\u0e17\u0e35\u0e48\u0e40\u0e01\u0e47\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e15\u0e47\u0e21\u0e04\u0e48\u0e30 \u274c');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function hamExportDefaultCode() {
+        playClickSound();
+        const template = JSON.parse(JSON.stringify(gachaItems));
+        template.forEach(function (item) { item.initialQty = item.quantity; });
+        const body = template.map(function (it) {
+            return '        ' + JSON.stringify({
+                id: it.id,
+                name: it.name,
+                rarity: it.rarity,
+                quantity: it.quantity,
+                initialQty: it.initialQty,
+                image: it.image || ''
+            });
+        }).join(',\n');
+        const code = '    const defaultItemsSetup = [\n' + body + '\n    ];\n';
+        const hasImg = template.some(function (it) { return it.image && it.image.length > 0; });
+        const sizeMB = (code.length / 1048576).toFixed(2);
+        hamDownloadFile('defaultItemsSetup-' + hamTimeStamp() + '.txt', code, 'text/plain');
+        alert('\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e42\u0e04\u0e49\u0e14\u0e04\u0e48\u0e32\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e04\u0e48\u0e30! \U0001f9ec\n\u0e02\u0e19\u0e32\u0e14 \u2248 ' + sizeMB + ' MB' + (hasImg ? '\n(\u0e21\u0e35\u0e23\u0e39\u0e1b\u0e20\u0e32\u0e1e\u0e1d\u0e31\u0e07\u0e21\u0e32\u0e14\u0e49\u0e27\u0e22 \u0e44\u0e1f\u0e25\u0e4c\u0e08\u0e36\u0e07\u0e43\u0e2b\u0e0d\u0e48)' : '') + '\n\n\u0e27\u0e34\u0e18\u0e35\u0e43\u0e0a\u0e49: \u0e40\u0e1b\u0e34\u0e14\u0e44\u0e1f\u0e25\u0e4c .txt \u2192 \u0e04\u0e31\u0e14\u0e25\u0e2d\u0e01\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 \u2192 \u0e40\u0e2d\u0e32\u0e44\u0e1b\u0e27\u0e32\u0e07\u0e17\u0e31\u0e1a\u0e1a\u0e23\u0e23\u0e17\u0e31\u0e14 const defaultItemsSetup = [ ... ]; \u0e43\u0e19 index.html \u0e41\u0e25\u0e49\u0e27 commit');
+    }
+    /* =================== END BACKUP / TRANSFER SYSTEM =================== */
 
     // Initialize System
     loadFromLocalStorage(); 
