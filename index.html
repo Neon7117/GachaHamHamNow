@@ -193,6 +193,15 @@
         .btn-set-default:hover { background: #805ad5; }
 .backup-bar { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 16px; margin: 0 0 20px 0; border: 2px dashed #cbd5e0; border-radius: 12px; background: #fafafa; }
 .backup-bar-title { font-weight: bold; color: #4a5568; margin-right: 6px; }
+.btn-save-all { background: #38a169; color: #fff; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-bottom: 20px; margin-right: 10px; transition: 0.2s; -webkit-appearance: none; }
+.btn-save-all:hover { background: #2f855a; }
+.btn-save-all.is-dirty { background: #dd6b20; animation: hamPulse 1.1s infinite; }
+.btn-save-all.is-dirty:hover { background: #c05621; }
+@keyframes hamPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+#ham-toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(30px); background: #2f855a; color: #fff; padding: 12px 26px; border-radius: 30px; font-weight: bold; box-shadow: 0 6px 20px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: 0.25s; z-index: 99999; font-size: 0.95rem; }
+#ham-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#ham-toast.warn { background: #dd6b20; }
+.inline-edit-input.ham-saved, .inline-edit-select.ham-saved { border-color: #38a169 !important; background: #f0fff4 !important; transition: 0.4s; }
 .btn-backup { padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; color: #fff; transition: 0.2s; -webkit-appearance: none; }
 .btn-backup:hover { filter: brightness(0.9); }
 .btn-bk-export { background: #38a169; }
@@ -312,6 +321,7 @@
     <div id="admin-tab" class="panel">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 5px;">
             <h3>🛠️ Admin Management Panel</h3>
+            <button class="btn-save-all" id="ham-save-all-btn" onclick="hamSaveAllInline()">✔️ Save All Changes</button>
             <button class="btn-set-default" onclick="setPoolAsCustomDefault()">💾 Save Current Pool as Default Template</button>
         </div>
 
@@ -514,6 +524,8 @@
                 item[field] = value;
             }
             saveToLocalStorage();
+            hamFlashSaved(id, field);
+            hamClearDirty();
             drawDynamicWheel();
             const totalPool = gachaItems.reduce((sum, i) => sum + i.quantity, 0);
             document.getElementById('total-pool-master-num').innerText = totalPool;
@@ -789,15 +801,15 @@
             tr.innerHTML = `
                 <td>${thumbContent}</td>
                 <td>
-                    <select class="inline-edit-select" onchange="updateItemInlineData(${item.id}, 'rarity', this.value)">
+                    <select class="inline-edit-select" data-ham-id="${item.id}" data-ham-field="rarity" onchange="updateItemInlineData(${item.id}, 'rarity', this.value)">
                         ${['A','B','C','D','E','F','G'].map(r => `<option value="${r}" ${item.rarity === r ? 'selected' : ''}>Rank ${r}</option>`).join('')}
                     </select>
                 </td>
                 <td>
-                    <input type="text" class="inline-edit-input" value="${item.name}" onchange="updateItemInlineData(${item.id}, 'name', this.value)">
+                    <input type="text" class="inline-edit-input" data-ham-id="${item.id}" data-ham-field="name" value="${item.name}" oninput="hamMarkDirty()" onkeydown="hamEnterToSave(event)" onchange="updateItemInlineData(${item.id}, 'name', this.value)">
                 </td>
                 <td>
-                    <input type="number" class="inline-edit-input" min="0" style="width:80px; text-align:center;" value="${item.quantity}" onchange="updateItemInlineData(${item.id}, 'quantity', this.value)">
+                    <input type="number" class="inline-edit-input" data-ham-id="${item.id}" data-ham-field="quantity" min="0" style="width:80px; text-align:center;" value="${item.quantity}" oninput="hamMarkDirty()" onkeydown="hamEnterToSave(event)" onchange="updateItemInlineData(${item.id}, 'quantity', this.value)">
                 </td>
                 <td>${item.quantity === 0 ? '0.00' : currentRate}%</td>
                 <td>
@@ -1041,6 +1053,83 @@
         }
     }
 
+    /* ===================== SAVE FEEDBACK SYSTEM ===================== */
+    let hamToastTimer = null;
+    function hamToast(msg, isWarn) {
+        const el = document.getElementById('ham-toast');
+        if (!el) return;
+        el.innerText = msg;
+        el.className = 'show' + (isWarn ? ' warn' : '');
+        clearTimeout(hamToastTimer);
+        hamToastTimer = setTimeout(function () { el.className = ''; }, 2200);
+    }
+
+    function hamMarkDirty() {
+        const btn = document.getElementById('ham-save-all-btn');
+        if (btn && !btn.classList.contains('is-dirty')) {
+            btn.classList.add('is-dirty');
+            btn.innerText = '\u26a0\ufe0f Save All Changes (\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01)';
+        }
+    }
+
+    function hamClearDirty() {
+        const btn = document.getElementById('ham-save-all-btn');
+        if (btn) {
+            btn.classList.remove('is-dirty');
+            btn.innerText = '\u2714\ufe0f Save All Changes';
+        }
+    }
+
+    function hamFlashSaved(id, field) {
+        const el = document.querySelector('[data-ham-id="' + id + '"][data-ham-field="' + field + '"]');
+        if (el) {
+            el.classList.add('ham-saved');
+            setTimeout(function () { el.classList.remove('ham-saved'); }, 900);
+        }
+        hamToast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e41\u0e25\u0e49\u0e27 \u2713');
+    }
+
+    function hamEnterToSave(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            event.target.blur();
+        }
+    }
+
+    function hamSaveAllInline() {
+        playClickSound();
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        let changed = 0;
+        document.querySelectorAll('[data-ham-id][data-ham-field]').forEach(function (el) {
+            const id = parseInt(el.getAttribute('data-ham-id'));
+            const field = el.getAttribute('data-ham-field');
+            const item = gachaItems.find(function (i) { return i.id === id; });
+            if (!item) return;
+            let val = el.value;
+            if (field === 'quantity') {
+                val = Math.max(0, parseInt(val) || 0);
+                if (item.quantity !== val) { item.quantity = val; changed++; }
+            } else {
+                if (item[field] !== val) { item[field] = val; changed++; }
+            }
+        });
+        saveToLocalStorage();
+        render();
+        hamClearDirty();
+        hamToast(changed > 0
+            ? '\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e41\u0e25\u0e49\u0e27 ' + changed + ' \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23 \u2713'
+            : '\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e1b\u0e47\u0e19\u0e1b\u0e31\u0e08\u0e08\u0e38\u0e1a\u0e31\u0e19\u0e2d\u0e22\u0e39\u0e48\u0e41\u0e25\u0e49\u0e27 \u2713');
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        const btn = document.getElementById('ham-save-all-btn');
+        if (btn && btn.classList.contains('is-dirty')) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+    /* =================== END SAVE FEEDBACK SYSTEM =================== */
+
     /* ===================== BACKUP / TRANSFER SYSTEM ===================== */
     const HAM_BACKUP_KEYS = [
         'v30_gacha_items',
@@ -1165,6 +1254,8 @@
     render(); 
     animateIdleWheel();
 </script>
+
+<div id="ham-toast"></div>
 
 </body>
 </html>
